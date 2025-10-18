@@ -5,10 +5,12 @@ RUN apt install -y \
     git \
     cmake \
     vim \
-    bzip2 \
     gcc-14 \
     g++-14 \
-    libgcrypt-dev
+    wget \
+    m4 \
+    autoconf \
+    libtool
 
 
 # Make a fake sudo

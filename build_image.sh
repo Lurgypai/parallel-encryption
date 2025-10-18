@@ -1,5 +1,5 @@
 #!/bin/bash
 
-docker image rm testing-encryption
+docker image rm parallel-encryption
 
-docker build -t testing-encryption .
+docker build -t parallel-encryption .
