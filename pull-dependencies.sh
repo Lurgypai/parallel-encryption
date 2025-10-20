@@ -46,8 +46,8 @@ pushd "nettle-3.10.2" > /dev/null
 make -j`nproc` && make install
 popd > /dev/null
 
-MPIRUN=$(which mpirun)
-if [[ -z ${MPIRUN} ]]; then
+MPICC=$(which mpicc)
+if [[ -z ${MPICC} ]]; then
     echo "Pulling and installing mpich"
     git clone https://github.com/pmodels/mpich.git --recursive
     pushd mpich > /dev/null
@@ -56,7 +56,7 @@ if [[ -z ${MPIRUN} ]]; then
     make -j`nproc` && make install
     popd > /dev/null
 else
-    echo "Found mpirun at \"${MPIRUN}\", skipping install"
+    echo "Found mpicc at \"${MPICC}\", skipping install"
 fi
 
 popd > /dev/null
