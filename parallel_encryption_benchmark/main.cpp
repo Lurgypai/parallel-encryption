@@ -46,6 +46,7 @@ int main(int argc, char** argv) {
 
     if(my_rank == 0) std::cout << "Shared: " << shared << '\n';
 
+
     // prepare encryption
     std::unique_ptr<EncryptionLibrary> el{};
     el = std::make_unique<ELgcrypt>();
@@ -54,6 +55,9 @@ int main(int argc, char** argv) {
     el->setKey(key.data(), key.size());
 
     MPI_Barrier(MPI_COMM_WORLD);
+    Timer totalTimer;
+    totalTimer.reset();
+
     Timer nonceGenTimer;
     nonceGenTimer.reset();
     std::string nonce;
@@ -94,8 +98,6 @@ int main(int argc, char** argv) {
     double writeTime = 0.0;
 
     MPI_Barrier(MPI_COMM_WORLD);
-    Timer totalTimer;
-    totalTimer.reset();
 
     MPI_Status status;
     t.reset();
@@ -126,15 +128,28 @@ int main(int argc, char** argv) {
 
     // report timing
     if(my_rank == 0) {
-        std::cout << "Encryption Time: " << encryptionTime / (1000 * 1000 * 1000) << "s\n";
-        std::cout << "Write Time: " << writeTime / (1000 * 1000 * 1000) << "s\n";
-        std::cout << "Total Time: " << totalElapsed / (1000 * 1000 * 1000) << "s\n";
-        std::cout << "Nonce Generation Time: " << nonceGenTime / (1000 * 1000 * 1000) << "s\n";
+        double encryptionTimeS = encryptionTime / (1000 * 1000 * 1000);
+        double writeTimeS = writeTime / (1000 * 1000 * 1000);
+        double totalElapsedS = totalElapsed / (1000 * 1000 * 1000);
+        double nonceGenTimeS = nonceGenTime / (1000 * 1000 * 1000);
+        double nonceSize = nonce.size() / 1000.0;
         if(!shared) {
-            std::cout << "Total Nonce Size: " << (nonce.size() * process_count) / 1000.0 << " KiB\n";
-        } else {
-            std::cout << "Total Nonce Size: " << nonce.size() / 1000.0 << " KiB\n";
+            nonceSize *= process_count;
         }
+
+        std::cout << "Encryption Time: " << encryptionTimeS << "s\n";
+        std::cout << "Write Time: " << writeTimeS << "s\n";
+        std::cout << "Total Time: " << totalElapsedS << "s\n";
+        std::cout << "Nonce Generation Time: " << nonceGenTimeS << "s\n";
+        std::cout << "Total Nonce Size: " << nonceSize << " KiB\n";
+        
+        std::ofstream logFile{"results.csv"};
+        logFile << "metric, value\n";
+        logFile << "encryption, " << encryptionTimeS << '\n';
+        logFile << "write, " << writeTimeS << '\n';
+        logFile << "total, " << totalElapsedS << '\n';
+        logFile << "nonceTime, " << nonceGenTimeS << '\n';
+        logFile << "nonceSize, " << nonceSize << '\n';
     }
 
     // Finalize the MPI environment.
